@@ -5,7 +5,8 @@ const mongoose=require('mongoose');
 require('dotenv').config()
 const mongoURI = process.env.MONGODB_URI
 app.use(express.json())
-
+const router=require("./routes")
+app.use('/api', router);
 app.get('/', (req, res) => {
   res.send('IntelliFeed');
 });
@@ -20,5 +21,5 @@ app.get('/mongoDBstatus',(req,res)=>{
   });
 
 app.listen(port, () => {
-  console.log(`Server is running on port ${port}`);
+  console.log(`🚀 Server is running on port ${port}`);
 });
