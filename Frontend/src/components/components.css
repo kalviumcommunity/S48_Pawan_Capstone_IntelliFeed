@@ -1,0 +1,59 @@
+#signupcontainer{
+    height: 100vh;
+    width: 100vw;
+    background-image: url('../assets/signupBG.png');
+    background-size: cover;
+}
+.flex{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.LR{
+    position: fixed;
+    height: 100vh;
+}
+#lb{
+    left: 0%;
+}
+#if{
+    right: 0%;
+}
+.sgbox{
+    height: 63%;
+    width:50%;
+    border-radius:5px;
+    box-shadow: 0px 2px 10px grey;
+}
+#logo{
+    height: 100%;
+}
+.form{
+    flex-direction: column;
+    scale: 1.25;
+}
+.container{
+    height: 100%;
+    width: 100%;
+    background-color: #48789c;
+    border-radius:0px 5px 5px 0px;
+}
+.logocontainer{
+    background-color: #feeec8 ;
+    border-radius: 5px;
+}
+input{
+    width: 100%;
+    padding: 10px 5px;
+    margin: 10px;
+    background-color: #feeec8;
+    color: black;
+    border: black 1px solid;
+    /* border-radius: 5px; */
+}
+button{
+    background-color: black;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+}
