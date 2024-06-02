@@ -1,13 +1,15 @@
 import { useState } from 'react'
 import './App.css'
 import { Route,Routes,Link } from 'react-router-dom'
-import Signup from './components/Signup'
+import {Landingpage,Footer,Header,Login,Navigation,Preferences,Profile,Signup,
+        Chatbotpage,Chatcomponent,Feedpage,Newscard} from './Componentsindex'
 function App() {
 
   return (
     <>
-    {/* <h1>Welcome to intellifeed</h1> */}
-    <Signup></Signup>
+    <Routes>
+      <Route path='/' element={<Landingpage/>}/>
+    </Routes>
     </>
   )
 }
