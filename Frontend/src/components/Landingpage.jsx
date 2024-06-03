@@ -1,7 +1,7 @@
 import React from 'react'
 import LandingpageBG from '../assets/landingpageBG.png'
 import Gicon from '../assets/Gicon.png'
-
+import { Link } from 'react-router-dom'
 export default function Landingpage() {
   return (
     <div className='h-screen w-screen flex justify-center items-center bg-cover font-serif' style={{ backgroundImage: `url(${LandingpageBG})`,}}>
@@ -14,8 +14,8 @@ export default function Landingpage() {
       <br />No more information overload!
       </h3>
       <div className='flex justify-center items-center'>
-      <button className='font-sans bg-black text-white border-none px-4 py-2 m-2'> Sign-up </button>
-      <button className='font-sans bg-blue-200 text-black border-none px-4 py-2 m-2'> Login </button>
+      <Link to="/Signup" className='font-sans bg-black text-white border-none px-4 py-2 m-2'> Sign-up </Link>
+      <Link to="/Login" className='font-sans bg-blue-200 text-black border-none px-4 py-2 m-2'> Login </Link>
       <img className='w-50 h-10' src={Gicon} alt="" />
       </div>
       </div>
