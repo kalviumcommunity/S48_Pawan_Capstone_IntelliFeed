@@ -41,7 +41,7 @@ export default function Login() {
           <div><input className='m-2 p-2' type="text" placeholder='Enter your username'
                value={username}
                onChange={(e) => setUsername(e.target.value)} /></div>
-          <div><input className='m-2 p-2' type="text" placeholder='Enter your password'
+          <div><input className='m-2 p-2' type="password" placeholder='Enter your password'
                value={password}
                onChange={(e) => setPassword(e.target.value)} /></div>
           <div className='flex flex-col justify-center items-center'>
