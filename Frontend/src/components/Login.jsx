@@ -16,12 +16,12 @@ export default function Login() {
         username,
         password,
       });
-
+      localStorage.setItem('user', JSON.stringify(response.data.user));
       if (response.data.message === 'Login successful!') {
         navigate('/Feedpage');
-        alert('Login successful!'); 
+        alert("Login successfull")
       } else {
-        setErrorMessage(response.data.message); 
+        setErrorMessage(response.data.message);
       }
     } catch (error) {
       console.error(error);
@@ -50,7 +50,6 @@ export default function Login() {
           </div>
         </form>
       </div>
-
     </div>
   </div>
   )
