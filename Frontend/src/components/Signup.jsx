@@ -16,9 +16,17 @@ import addPP from '../assets/addPP.png'
 
   const handleProfilePictureChange = (event) => {
     const file = event.target.files[0];
+    const allowedTypes = ['image/jpeg', 'image/png'];
+   
     if (file) {
+      if (!allowedTypes.includes(file.type)) {
+        setErrorMessage('Only JPEG and PNG files are allowed.');
+        return;
+      }
+
       setProfilePicture(file);
       setProfilePicturePreview(URL.createObjectURL(file));
+      setErrorMessage(null);
     }
   };
 
