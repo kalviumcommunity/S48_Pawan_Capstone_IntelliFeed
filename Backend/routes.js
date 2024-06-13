@@ -11,6 +11,7 @@ const bcrypt = require('bcrypt');
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 const genAI = new GoogleGenerativeAI(process.env.API_KEY);
 const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash"});
+const upload = require('./config/multer');
 
 async function summarizeArticle(articleText) {
   try {
@@ -21,7 +22,7 @@ async function summarizeArticle(articleText) {
     return summary;
   } catch (error) {
     console.error('Error summarizing article:', error);
-    return null; // Indicate error or handle appropriately
+    return null;
   }
 }
 
@@ -93,7 +94,7 @@ router.get('/getArticles/:id', async (req, res) => {
   }
 });
 
-router.post('/signup', async (req, res) => {
+router.post('/signup', upload.single('profilePicture'), async (req, res) => {
     try {
       const { username, email, password } = req.body;
 
@@ -118,10 +119,13 @@ router.post('/signup', async (req, res) => {
           return res.status(400).json({ message: errorMessage });
       }
 
+      const profilePicture = req.file ? req.file.buffer : null;
+
       const newUser = new User({
         username,
         email,
         password: hashedPassword,
+        profilePicture,
       });
 
       const savedUser = await newUser.save();
