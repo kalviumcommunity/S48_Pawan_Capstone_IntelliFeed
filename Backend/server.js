@@ -1,24 +1,29 @@
 const express = require('express');
 const cors = require('cors'); 
 const app = express();
-app.use(cors()); 
-const port = process.env.PORT || 3000;
 const mongoose=require('mongoose');
 const User = require('./Models/users');
 const summarizedarticles = require('./Models/summarisedarticles');
 require('dotenv').config()
+
+const port = process.env.PORT || 3000;
 const mongoURI = process.env.MONGODB_URI
+
+app.use(cors()); 
 app.use(express.json())
-const router=require("./routes")
-app.use('/api', router);
-app.get('/', (req, res) => {
-  res.send('IntelliFeed');
-});
 
 mongoose.connect(mongoURI);
 const db =mongoose.connection;
-db ? console.log("connected to the database") :console.log("not connected");
 db.on('error',console.error.bind(console,'MongoDB connection error:'));
+db.once('open', () => console.log('Connected to the database'));
+
+const router = require("./routes");
+
+app.use('/api', router);
+
+app.get('/', (req, res) => {
+  res.send('IntelliFeed');
+});
 
 app.get('/mongoDBstatus',(req,res)=>{
     res.send(`Database Connection Status:${db?'Connected':'Disconnected'}`);

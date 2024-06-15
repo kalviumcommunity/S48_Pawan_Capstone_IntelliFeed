@@ -16,8 +16,9 @@ export default function Login() {
         username,
         password,
       });
-      localStorage.setItem('user', JSON.stringify(response.data.user));
       if (response.data.message === 'Login successful!') {
+        localStorage.setItem('token', response.data.token);
+        localStorage.setItem('user', JSON.stringify(response.data.user));
         navigate('/Feedpage');
         alert("Login successfull")
       } else {

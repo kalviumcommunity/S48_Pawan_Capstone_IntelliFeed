@@ -12,6 +12,8 @@ const { GoogleGenerativeAI } = require("@google/generative-ai");
 const genAI = new GoogleGenerativeAI(process.env.API_KEY);
 const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash"});
 const upload = require('./config/multer');
+const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret';
+const jwt = require('jsonwebtoken');
 
 async function summarizeArticle(articleText) {
   try {
@@ -22,9 +24,21 @@ async function summarizeArticle(articleText) {
     return summary;
   } catch (error) {
     console.error('Error summarizing article:', error);
-    return null; // Indicate error or handle appropriately
+    return null;
   }
 }
+
+const authenticateToken = (req, res, next) => {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
+  if (!token) return res.status(401).json({ message: 'Access denied' });
+
+  jwt.verify(token, JWT_SECRET, (err, user) => {
+    if (err) return res.status(403).json({ message: 'Invalid token' });
+    req.user = user;
+    next();
+  });
+};
 
 router.get('/mongoDBstatus',(req,res)=>{
   res.send(`Database Connection Status:${db?'Connected':'Disconnected'}`);
@@ -42,7 +56,7 @@ router.get('/newsAPIorg', (req, res) => {
       });
 });
 
-router.get('/getUsers', async (req, res) => {
+router.get('/getUsers', authenticateToken , async (req, res) => {
   try {
     const users = await User.find(); 
     res.status(200).json(users);
@@ -52,7 +66,7 @@ router.get('/getUsers', async (req, res) => {
   }
 });
 
-router.get('/getArticles', async (req, res) => {
+router.get('/getArticles',authenticateToken, async (req, res) => {
   try {
     const articles = await summarizedarticles.find(); 
     res.status(200).json(articles);
@@ -152,13 +166,15 @@ router.post('/login', async (req, res) => {
       return res.status(401).json({ message: 'Invalid username or password.' });
     }
     const profilePicture = user.profilePicture ? user.profilePicture.toString('base64') : null;
-
+    const token = jwt.sign({ id: user._id, username: user.username }, JWT_SECRET, { expiresIn: '1h' });
+ 
     res.status(200).json({
       message: 'Login successful!',
       user: {
         ...user.toJSON({ virtuals: true }),
         profilePicture,
       },
+      token
     });
   } catch (err) {
     console.error(err);
