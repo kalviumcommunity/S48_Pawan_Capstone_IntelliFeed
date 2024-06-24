@@ -1,18 +1,14 @@
 const express = require('express')
-require('dotenv').config()
 const router = express.Router()
+const passport= require('passport');
 const User = require('./Models/users');
 const summarizedarticles = require("./Models/summarisedarticles")
-const mongoose=require('mongoose');
-const db =mongoose.connection;
-const mongoURI = process.env.MONGODB_URI
-mongoose.connect(mongoURI);
 const bcrypt = require('bcrypt'); 
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 const genAI = new GoogleGenerativeAI(process.env.API_KEY);
 const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash"});
 const upload = require('./config/multer');
-const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret';
+const JWT_SECRET = process.env.JWT_SECRET;
 const jwt = require('jsonwebtoken');
 
 async function summarizeArticle(articleText) {
@@ -39,10 +35,6 @@ const authenticateToken = (req, res, next) => {
     next();
   });
 };
-
-router.get('/mongoDBstatus',(req,res)=>{
-  res.send(`Database Connection Status:${db?'Connected':'Disconnected'}`);
-});
 
 router.get('/newsAPIorg', (req, res) => {
   fetch(`https://newsapi.org/v2/top-headlines?category=sports&country=in&apiKey=${process.env.NEWSapiORG}`)
@@ -115,24 +107,21 @@ router.post('/signup', upload.single('profilePicture'), async (req, res) => {
       return res.status(400).json({ message: 'Please fill in all fields.' });
     }
 
-    const existingEmail = await User.findOne({ email });
-    const existingUsername = await User.findOne({ username });
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
+    const existingUser = await User.findOne({ $or: [{ username }, { email }] });
 
-    let errorMessage = '';
-    if (existingEmail && existingUsername) {
-      errorMessage = 'Username and email already in use.';
-    } else if (existingEmail) {
-      errorMessage = 'Email already in use.';
-    } else if (existingUsername) {
-      errorMessage = 'Username already in use.';
-    }
-
-    if (errorMessage) {
+    if (existingUser) {
+      let errorMessage = '';
+      if (existingUser.username === username) {
+        errorMessage = 'Username already in use.';
+      }
+      if (existingUser.email === email) {
+        errorMessage = 'Email already in use.';
+      }
       return res.status(400).json({ message: errorMessage });
     }
 
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
     const profilePicture = req.file ? req.file.buffer : null;
 
     const newUser = new User({
@@ -165,23 +154,13 @@ router.post('/login', async (req, res) => {
     if (!isMatch) {
       return res.status(401).json({ message: 'Invalid username or password.' });
     }
-    const profilePicture = user.profilePicture ? user.profilePicture.toString('base64') : null;
-    const token = jwt.sign({ id: user._id, username: user.username }, JWT_SECRET, { expiresIn: '1h' });
- 
-    res.status(200).json({
-      message: 'Login successful!',
-      user: {
-        ...user.toJSON({ virtuals: true }),
-        profilePicture,
-      },
-      token
-    });
+    const token = jwt.sign({ id: user._id, username: user.username , pp:user.profilePicture }, JWT_SECRET, { expiresIn: '1h' });
+    res.status(200).json({ message: 'Login successful!', token });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Server error. Please try again later.' });
   }
 });
-
 
   router.post('/summarize', async (req, res) => {
   try {
@@ -219,5 +198,32 @@ router.post('/bookmarks', async (req, res) => {
     res.status(500).json({ message: 'Failed to save bookmark.' });
   }
 });
+
+router.get('/auth/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
+
+router.get('/auth/google/callback', 
+  passport.authenticate('google', { failureRedirect: '/login' }),
+  (req, res) => {
+    const token = jwt.sign({ id: req.user._id, username: req.user.username}, JWT_SECRET, { expiresIn: '1h' });
+    res.redirect(`http://localhost:5173/feedpage?token=${encodeURIComponent(token)}`);
+  }
+);
+
+router.get('/logout', (req, res) => {
+  req.logout(function(err) {
+    if (err) {
+      return res.status(500).json({ message: 'Failed to log out' });
+    }
+    req.session.destroy((err) => {
+      if (err) {
+        return res.status(500).json({ message: 'Failed to destroy session' });
+      }
+      res.clearCookie('connect.sid');
+      res.status(200).json({ message: 'Logout successful!' });
+  
+    });
+  });
+});
+
 
 module.exports = router;
