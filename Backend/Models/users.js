@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-
+const Schema = mongoose.Schema;
 const userSchema = new mongoose.Schema({
   username: {
     type: String,
@@ -13,10 +13,14 @@ const userSchema = new mongoose.Schema({
   },
   password: {
     type: String,
-    required: true,
+  },
+  googleId: {
+    type: String,
+    unique: true,
   },
   profilePicture: {
-    type: Buffer,
+    type: Schema.Types.Mixed,
+    default: null,
   },
   interests: {
     type: [String], 
